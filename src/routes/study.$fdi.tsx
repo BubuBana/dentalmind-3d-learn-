@@ -3,6 +3,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { useProgress } from "@/lib/progress";
 import { TEETH, getTooth } from "@/lib/teeth";
+import { MEASUREMENTS, MEASUREMENT_LABELS, MEASUREMENT_NOTE } from "@/lib/measurements";
 import { Tooth3D } from "@/components/Tooth3D";
 import { Card, TypicalVariable } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -44,7 +45,7 @@ export const Route = createFileRoute("/study/$fdi")({
 function ToothDetail() {
   const { fdi } = Route.useParams();
   const tooth = getTooth(fdi)!;
-  const { t, loc, other } = useI18n();
+  const { t, loc, other, lang } = useI18n();
   const { state, recordView, markStudied } = useProgress();
 
   const [selected, setSelected] = React.useState<string | null>(null);
@@ -59,6 +60,7 @@ function ToothDetail() {
   const prev = TEETH[(idx - 1 + TEETH.length) % TEETH.length]!;
   const next = TEETH[(idx + 1) % TEETH.length]!;
   const studied = Boolean(state.teeth[fdi]?.studied);
+  const size = MEASUREMENTS[tooth.arch][tooth.type];
 
   const rows = [
     { label: t("study.crown"), typical: loc(tooth.anatomy.crown), variable: null },
@@ -149,6 +151,21 @@ function ToothDetail() {
                 <p className="mt-1 text-sm text-muted-foreground">{loc(tooth.anatomy.clinical)}</p>
               </div>
             </div>
+          </Card>
+
+          <Card>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t("study.measurements")}
+            </h2>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              {(Object.keys(MEASUREMENT_LABELS) as Array<keyof typeof MEASUREMENT_LABELS>).map((k) => (
+                <div key={k} className="flex items-baseline justify-between gap-2 border-b border-border pb-1">
+                  <dt className="text-muted-foreground">{loc(MEASUREMENT_LABELS[k])}</dt>
+                  <dd className="font-semibold tabular-nums">{lang === "en" ? String(size[k]) : String(size[k]).replace(".", ",")} mm</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-2 text-xs text-muted-foreground">{loc(MEASUREMENT_NOTE)}</p>
           </Card>
 
           <Card>

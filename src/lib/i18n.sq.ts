@@ -337,4 +337,15 @@ export const SQ: Record<string, string> = {
   "common.lesson": "Mësimi",
   "common.exercises": "Ushtrime",
   "common.new": "E re në 2.0",
+
+  "nav.lab": "Laboratori",
+  "study.measurements": "Përmasat mesatare",
+  "lab.title": "Laboratori dentar",
+  "lab.subtitle": "Bazat për teknikët dentarë të ardhshëm: okluzioni, modelet, materialet, protezat, CAD/CAM, ngjyra dhe siguria.",
+  "lab.workflow.title": "Ushtrim: fazat e një kurore",
+  "lab.workflow.text": "Prek fazat për një kurorë metal-qeramike në rendin e saktë.",
+  "lab.workflow.done": "Renditja u përfundua. Gabime: {errors}.",
+  "lab.workflow.errors": "Gabime: {errors}",
+  "lab.quiz.title": "Kuizi i laboratorit",
+  "lab.disclaimer": "Përmbajtje e përgjithshme studimi. Programet e formimit, produktet dhe rregullat ndryshojnë nga vendi në vend.",
 };

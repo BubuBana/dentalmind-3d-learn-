@@ -337,4 +337,15 @@ export const EN: Record<string, string> = {
   "common.lesson": "Lesson",
   "common.exercises": "Exercises",
   "common.new": "New in 2.0",
+
+  "nav.lab": "Laboratory",
+  "study.measurements": "Average measurements",
+  "lab.title": "Dental laboratory",
+  "lab.subtitle": "The basics for future dental technicians: occlusion, models, materials, prostheses, CAD/CAM, shade and safety.",
+  "lab.workflow.title": "Exercise: the steps of a crown",
+  "lab.workflow.text": "Tap the steps for a metal-ceramic crown in the correct order.",
+  "lab.workflow.done": "Sequence complete. Errors: {errors}.",
+  "lab.workflow.errors": "Errors: {errors}",
+  "lab.quiz.title": "Laboratory quiz",
+  "lab.disclaimer": "General study content. Training programmes, products and regulations differ from country to country.",
 };

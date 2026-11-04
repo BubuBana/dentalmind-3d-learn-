@@ -6,6 +6,8 @@ import { mesialNeighbour, distalNeighbour, mirrorFdi, recognitionSteps, TRICK_QU
 import { assessRecognitionAnswer } from "./tutorAssessment";
 import { VOCABULARY } from "./vocabulary";
 import { DICTS } from "./i18n.dict";
+import { CROWN_WORKFLOW, LAB_QUIZ, LAB_SECTIONS } from "./lab";
+import { MEASUREMENTS, MEASUREMENT_LABELS, MEASUREMENT_NOTE } from "./measurements";
 
 function tooth(fdi: string) {
   const result = getTooth(fdi);
@@ -59,6 +61,20 @@ describe("Clinically sound permanent dentition", () => {
     expect(apexHint("13")).toMatch(/longest root in the dentition/);
     expect(apexHint("33")).toMatch(/mandibular arch/);
   });
+  it("keeps the average measurements consistent with the anatomy texts", () => {
+    const all = (["upper", "lower"] as const).flatMap((a) => Object.entries(MEASUREMENTS[a]).map(([type, m]) => ({ a, type, m })));
+    expect(all).toHaveLength(16);
+    const longestRoot = all.reduce((x, y) => (y.m.rootLength > x.m.rootLength ? y : x));
+    expect(`${longestRoot.a}:${longestRoot.type}`).toBe("upper:canine");
+    const narrowest = all.reduce((x, y) => (y.m.mdCrown < x.m.mdCrown ? y : x));
+    expect(`${narrowest.a}:${narrowest.type}`).toBe("lower:centralIncisor");
+    expect(MEASUREMENTS.lower.canine.rootLength).toBe(Math.max(...Object.values(MEASUREMENTS.lower).map((m) => m.rootLength)));
+    for (const { m } of all) {
+      expect(m.mdCervix < m.mdCrown).toBe(true);
+      expect(m.blCervix <= m.blCrown).toBe(true);
+    }
+    for (const q of LAB_QUIZ) expect(q.correct < q.options.length).toBe(true);
+  });
   it("distinguishes opposite-arch homologue from Class I antagonists", () => {
     expect(opposingHomologue("16")).toBe("46");
     expect(classIAntagonists("16")).toEqual(["46", "47"]);
@@ -90,6 +106,11 @@ describe("Four languages", () => {
       UPPER_PAIRS,
       LOWER_PAIRS,
       VOCABULARY,
+      LAB_SECTIONS,
+      CROWN_WORKFLOW,
+      LAB_QUIZ,
+      MEASUREMENT_LABELS,
+      MEASUREMENT_NOTE,
     ];
     const objects = localized(sources);
     expect(objects.length).toBeGreaterThan(500);

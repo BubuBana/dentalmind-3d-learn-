@@ -3,7 +3,7 @@ import { useI18n } from "@/lib/i18n";
 import { useProgress, levelFromXp, todayKey } from "@/lib/progress";
 import { TEETH, getTooth, QUADRANT_LABEL } from "@/lib/teeth";
 import { Card, Stat, Progressbar } from "@/components/ui";
-import { GraduationCap, Brain, Columns2, Languages, CalendarCheck, ArrowRight, BookOpen, Sparkles } from "lucide-react";
+import { GraduationCap, Brain, Columns2, Languages, CalendarCheck, ArrowRight, BookOpen, Sparkles, FlaskConical } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,6 +40,7 @@ function HomePage() {
     { to: "/quiz", label: t("home.startQuiz"), icon: Brain },
     { to: "/compare", label: t("nav.compare"), icon: Columns2 },
     { to: "/vocabulary", label: t("nav.vocabulary"), icon: Languages },
+    { to: "/laboratorio", label: t("nav.lab"), icon: FlaskConical },
   ] as const;
 
   return (
@@ -160,7 +161,7 @@ function HomePage() {
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("home.quick")}
         </h2>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {quick.map((q) => (
             <Link
               key={q.to}

@@ -16,6 +16,7 @@ import {
   MessagesSquare,
   Route,
   Timer,
+  FlaskConical,
   Menu,
   X,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const NAV = [
   { to: "/conosci-il-dente", key: "nav.knowTooth", icon: BookOpen },
   { to: "/study", key: "nav.study", icon: GraduationCap },
   { to: "/quiz", key: "nav.quiz", icon: Brain },
+  { to: "/laboratorio", key: "nav.lab", icon: FlaskConical },
   { to: "/tutor", key: "nav.tutor", icon: MessagesSquare },
   { to: "/path", key: "nav.path", icon: Route },
   { to: "/exam", key: "nav.exam", icon: Timer },
