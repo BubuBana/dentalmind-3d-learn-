@@ -4,7 +4,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, GizmoHelper, GizmoViewport, Environment, Lightformer, Html, useGLTF } from "@react-three/drei";
 import { TEETH, type Tooth } from "@/lib/teeth";
 import { getModelSource } from "@/lib/models";
-import { buildCrownGeometry, buildRootGeometries, cuspPoints, fissurePoints } from "@/lib/toothMesh";
+import { buildCrownGeometry, buildRootGeometries, cuspPoints, groovePaths } from "@/lib/toothMesh";
 import { buildArchCurve, getArchSlot, getArchTeeth, mesialDirection } from "@/lib/toothArch";
 
 export type ViewKey = "buccal" | "oral" | "mesial" | "distal" | "occlusal" | "apical";
@@ -69,7 +69,7 @@ function ToothBody({ tooth, highlights }: { tooth: Tooth; highlights: Highlights
   const crown = React.useMemo(() => buildCrownGeometry(g), [g]);
   const roots = React.useMemo(() => buildRootGeometries(g), [g]);
   const cusps = React.useMemo(() => cuspPoints(g), [g]);
-  const fissure = React.useMemo(() => fissurePoints(g), [g]);
+  const grooves = React.useMemo(() => groovePaths(g), [g]);
 
   React.useEffect(() => {
     return () => {
@@ -78,30 +78,39 @@ function ToothBody({ tooth, highlights }: { tooth: Tooth; highlights: Highlights
     };
   }, [crown, roots]);
 
-  const fissureGeom = React.useMemo(() => {
-    const curve = new THREE.CatmullRomCurve3(fissure.map(([x, y, z]) => new THREE.Vector3(x, y, z)));
-    return new THREE.TubeGeometry(curve, 40, 0.018, 8, false);
-  }, [fissure]);
+  const grooveGeoms = React.useMemo(
+    () =>
+      grooves
+        .filter((path) => path.length > 1)
+        .map((path) => {
+          const curve = new THREE.CatmullRomCurve3(path.map(([x, y, z]) => new THREE.Vector3(x, y, z)));
+          return new THREE.TubeGeometry(curve, Math.max(8, path.length * 2), 0.012, 6, false);
+        }),
+    [grooves],
+  );
+
+  React.useEffect(() => () => grooveGeoms.forEach((geo) => geo.dispose()), [grooveGeoms]);
 
   return (
     <group>
       <mesh geometry={crown} castShadow receiveShadow>
         <meshPhysicalMaterial
-          color="#f6f1e6"
-          roughness={0.28}
+          color="#f3eee2"
+          roughness={0.32}
           metalness={0}
-          clearcoat={0.7}
-          clearcoatRoughness={0.25}
-          sheen={0.3}
-          sheenColor="#ffffff"
+          clearcoat={0.55}
+          clearcoatRoughness={0.3}
+          sheen={0.4}
+          sheenColor="#fffaf0"
+          sheenRoughness={0.6}
         />
       </mesh>
 
       {roots.map((r, i) => (
         <mesh key={i} geometry={r.geometry} position={r.position} castShadow>
           <meshPhysicalMaterial
-            color={highlights.roots ? "#0d9488" : "#e6d9c2"}
-            roughness={0.55}
+            color={highlights.roots ? "#0d9488" : "#e3d2ad"}
+            roughness={0.62}
             metalness={0}
             clearcoat={0.2}
             emissive={highlights.roots ? "#0d9488" : "#000000"}
@@ -118,11 +127,12 @@ function ToothBody({ tooth, highlights }: { tooth: Tooth; highlights: Highlights
           </mesh>
         ))}
 
-      {highlights.fissures && g.silhouette !== "blade" && g.silhouette !== "pointed" && (
-        <mesh geometry={fissureGeom}>
-          <meshStandardMaterial color="#134e4a" emissive="#134e4a" emissiveIntensity={0.35} />
-        </mesh>
-      )}
+      {highlights.fissures &&
+        grooveGeoms.map((geo, i) => (
+          <mesh key={`g${i}`} geometry={geo}>
+            <meshStandardMaterial color="#134e4a" emissive="#134e4a" emissiveIntensity={0.35} />
+          </mesh>
+        ))}
 
       {highlights.surfaces && <SurfacePatches tooth={tooth} />}
     </group>
@@ -197,7 +207,7 @@ function DentalArchContext({ tooth }: { tooth: Tooth }) {
               key={neighbor.fdi}
               position={slot.position}
               rotation-y={slot.rotationY}
-              scale-x={slot.mirrorX}
+              scale-x={-mesialDirection(neighbor.side)}
             >
               <GhostTooth tooth={neighbor} />
             </group>
@@ -213,7 +223,7 @@ function SurfacePatches({ tooth }: { tooth: Tooth }) {
   const rx = g.crownWidth / 2;
   const rz = g.depth / 2;
   const upper = tooth.arch === "upper";
-  const mesial = mesialDirection(tooth.side);
+  const mesial = -1; // local frame; the parent group mirrors the tooth to the patient side
   const faces: Array<{ code: string; color: string; pos: [number, number, number]; rot: [number, number, number] }> = [
     { code: "V", color: "#0d9488", pos: [0, y, rz * 1.08], rot: [0, 0, 0] },
     { code: upper ? "P" : "L", color: "#6366f1", pos: [0, y, -rz * 1.08], rot: [0, Math.PI, 0] },
@@ -412,7 +422,7 @@ export default function ToothCanvas(props: ToothCanvasProps) {
           <group
             position={props.showArch ? selectedSlot.position : [0, 0, 0]}
             rotation-y={props.showArch ? selectedSlot.rotationY : 0}
-            scale-x={props.showArch ? selectedSlot.mirrorX : 1}
+            scale-x={-mesialDirection(tooth.side)}
           >
             <React.Suspense fallback={null}>
               {src ? <GltfTooth url={src.url} scale={src.scale ?? 1} /> : <ToothBody tooth={tooth} highlights={highlights} />}

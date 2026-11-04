@@ -7,6 +7,7 @@ import { assessRecognitionAnswer } from "./tutorAssessment";
 import { VOCABULARY } from "./vocabulary";
 import { DICTS } from "./i18n.dict";
 import { CROWN_WORKFLOW, LAB_QUIZ, LAB_SECTIONS } from "./lab";
+import { crownMesh, rootMeshes } from "./toothShape";
 import { MEASUREMENTS, MEASUREMENT_LABELS, MEASUREMENT_NOTE } from "./measurements";
 
 function tooth(fdi: string) {
@@ -54,6 +55,21 @@ describe("Clinically sound permanent dentition", () => {
       const cusps = cuspCounts(t);
       if (roots.length) expect(roots).toContain(t.geometry.rootCount);
       if (cusps.length && t.position >= 4) expect(cusps).toContain(t.geometry.cuspCount);
+    }
+  });
+  it("builds valid 3D meshes for every tooth", () => {
+    for (const t of TEETH) {
+      const parts = [crownMesh(t.geometry), ...rootMeshes(t.geometry).map((r) => r.mesh)];
+      expect(parts.length, t.fdi).toBe(t.geometry.rootCount === 1 ? 2 : t.geometry.rootCount + 2);
+      for (const p of parts) {
+        expect(p.positions.every(Number.isFinite), t.fdi).toBe(true);
+        expect(p.normals.every(Number.isFinite), t.fdi).toBe(true);
+        expect(Math.max(...p.indices) < p.positions.length / 3, t.fdi).toBe(true);
+      }
+      const crown = parts[0]!.positions;
+      let maxY = -Infinity;
+      for (let i = 1; i < crown.length; i += 3) maxY = Math.max(maxY, crown[i]!);
+      expect(Math.abs(maxY - t.geometry.crownHeight) < t.geometry.crownHeight * 0.45, t.fdi).toBe(true);
     }
   });
   it("only calls the upper canine root the longest in the dentition", () => {

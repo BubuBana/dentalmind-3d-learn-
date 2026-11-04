@@ -1,3 +1,5 @@
+import { MEASUREMENTS } from "./measurements";
+
 export const LANGS = ["it", "de", "en", "sq"] as const;
 export type Lang = (typeof LANGS)[number];
 export type L = Record<Lang, string>;
@@ -34,6 +36,11 @@ export interface Geometry {
   rootLength: number;
   rootSpread: number;
   silhouette: "blade" | "pointed" | "premolar" | "molar";
+  /** "upper:firstMolar" etc.; selects the crown shape in toothShape.ts */
+  kind?: string;
+  /** cervical width as a fraction of the maximum crown width (mesio-distal / vestibulo-oral) */
+  cervixX?: number;
+  cervixZ?: number;
 }
 
 export interface Anatomy {
@@ -524,6 +531,21 @@ const typeByPosition: ToothTypeKey[] = [
   "thirdMolar",
 ];
 
+/** Real average proportions (1 unit = 10 mm); counts and silhouette stay from the template. */
+function withMeasurements(g: Geometry, arch: Arch, type: ToothTypeKey): Geometry {
+  const m = MEASUREMENTS[arch][type];
+  return {
+    ...g,
+    kind: `${arch}:${type}`,
+    crownWidth: m.mdCrown / 10,
+    depth: m.blCrown / 10,
+    crownHeight: m.crownLength / 10,
+    rootLength: m.rootLength / 10 / 1.35,
+    cervixX: m.mdCervix / m.mdCrown,
+    cervixZ: m.blCervix / m.blCrown,
+  };
+}
+
 function buildTooth(quadrant: number, position: number): Tooth {
   const arch: Arch = quadrant === 1 || quadrant === 2 ? "upper" : "lower";
   const side: Side = quadrant === 1 || quadrant === 4 ? "right" : "left";
@@ -548,7 +570,7 @@ function buildTooth(quadrant: number, position: number): Tooth {
     shortName: t,
     anatomy: tpl.anatomy,
     landmarks: tpl.landmarks,
-    geometry: tpl.geometry,
+    geometry: withMeasurements(tpl.geometry, arch, type),
     modelUrl: null,
   };
 }
