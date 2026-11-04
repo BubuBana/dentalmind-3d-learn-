@@ -8,6 +8,7 @@ import { VOCABULARY } from "./vocabulary";
 import { DICTS } from "./i18n.dict";
 import { CROWN_WORKFLOW, LAB_QUIZ, LAB_SECTIONS } from "./lab";
 import { crownMesh, rootMeshes } from "./toothShape";
+import { BEFUND_CASES, BEFUND_CODES, BEFUND_BY_CODE, CHART_LOWER, CHART_UPPER, checkChart } from "./befund";
 import { MEASUREMENTS, MEASUREMENT_LABELS, MEASUREMENT_NOTE } from "./measurements";
 
 function tooth(fdi: string) {
@@ -127,6 +128,8 @@ describe("Four languages", () => {
       LAB_QUIZ,
       MEASUREMENT_LABELS,
       MEASUREMENT_NOTE,
+      BEFUND_CODES,
+      BEFUND_CASES,
     ];
     const objects = localized(sources);
     expect(objects.length).toBeGreaterThan(500);
@@ -202,5 +205,24 @@ describe("Tutor answer checker", () => {
     expect(assessRecognitionAnswer(tooth("22"), 3, "majtas")).toBe(true);
     expect(assessRecognitionAnswer(tooth("22"), 2, "prerës anësor")).toBe(true);
     expect(assessRecognitionAnswer(tooth("13"), 1, "kanin")).toBe(true);
+  });
+});
+
+describe("Findings chart exercise", () => {
+  it("uses valid teeth and codes in every case", () => {
+    expect(new Set(BEFUND_CODES.map((c) => c.code)).size).toBe(BEFUND_CODES.length);
+    const all = new Set([...CHART_UPPER, ...CHART_LOWER]);
+    expect(all.size).toBe(32);
+    for (const c of BEFUND_CASES) {
+      for (const [fdi, code] of Object.entries(c.solution)) {
+        expect(all.has(fdi), `${c.id} ${fdi}`).toBe(true);
+        expect(BEFUND_BY_CODE.has(code), `${c.id} ${code}`).toBe(true);
+      }
+    }
+  });
+  it("grades a chart tooth by tooth", () => {
+    const sol = { "36": "f", "16": "k" };
+    expect(checkChart({ "36": "f", "16": "k" }, sol)).toEqual({ correct: ["16", "36"], wrong: [], missing: [] });
+    expect(checkChart({ "36": "x", "11": "k" }, sol)).toEqual({ correct: [], wrong: ["36", "11"], missing: ["16"] });
   });
 });

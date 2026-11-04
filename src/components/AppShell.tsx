@@ -17,6 +17,7 @@ import {
   Route,
   Timer,
   FlaskConical,
+  ClipboardList,
   Menu,
   X,
 } from "lucide-react";
@@ -28,6 +29,7 @@ const NAV = [
   { to: "/study", key: "nav.study", icon: GraduationCap },
   { to: "/quiz", key: "nav.quiz", icon: Brain },
   { to: "/laboratorio", key: "nav.lab", icon: FlaskConical },
+  { to: "/befund", key: "nav.befund", icon: ClipboardList },
   { to: "/tutor", key: "nav.tutor", icon: MessagesSquare },
   { to: "/path", key: "nav.path", icon: Route },
   { to: "/exam", key: "nav.exam", icon: Timer },
